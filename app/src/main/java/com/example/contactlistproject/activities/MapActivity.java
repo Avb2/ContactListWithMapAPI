@@ -29,6 +29,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.contactlistproject.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -66,6 +67,39 @@ public class MapActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
+
+    private void createLocationRequest() {
+        locationRequest = LocationRequest.create();
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    private void createLocationCallback() {
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return ;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    Toast.makeText(getBaseContext(), "LAT: " + location.getLatitude() +
+                            "LONG: " + location.getLongitude() + "ACCURACY: " + location.getAccuracy(), Toast.LENGTH_LONG).show();
+                }
+            }
+        };
+    }
+
+    private void startLocationUpdates() {
+        if (Build.VERSION.SDK_INT >=23 && ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION) !=
+        PackageManager.PERMISSION_GRANTED) {
+            return ;
+        }
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest,
+                locationCallback, null);
+        gmap.setMyLocationEnabled(true);
     }
 
 
