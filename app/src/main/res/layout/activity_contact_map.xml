@@ -52,4 +52,26 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <RadioGroup
+        android:id="@+id/radioGroupMapType"
+        android:layout_width="267dp"
+        android:layout_height="0dp"
+        tools:layout_editor_absoluteX="30dp"
+        tools:layout_editor_absoluteY="505dp" >
+
+        <RadioButton
+            android:id="@+id/radioButtonSatellite"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Satellite" />
+    </RadioGroup>
+
+    <RadioButton
+        android:id="@+id/radioButtonNormal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Normal"
+        tools:layout_editor_absoluteX="39dp"
+        tools:layout_editor_absoluteY="493dp" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

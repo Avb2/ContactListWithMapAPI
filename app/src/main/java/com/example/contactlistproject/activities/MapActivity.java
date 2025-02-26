@@ -10,16 +10,13 @@ import android.graphics.Point;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.location.LocationRequest;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.TextView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 
@@ -33,8 +30,11 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.contactlistproject.R;
+import com.example.contactlistproject.db.ContactDataSource;
+import com.example.contactlistproject.models.Contact;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -47,14 +47,19 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class MapActivity extends AppCompatActivity {
+public class MapActivity extends AppCompatActivity implements  OnMapReadyCallback{
 
     final int PERMISSION_REQUEST_LOCATION = 101;
     GoogleMap gmap;
     FusedLocationProviderClient fusedLocationProviderClient;
     LocationRequest locationRequest;
     LocationCallback locationCallback;
+
+    ArrayList<Contact> contacts = new ArrayList<Contact>();
+    Contact currentContact = null;
 
 
 
@@ -63,6 +68,22 @@ public class MapActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_contact_map);
+
+        Bundle extras = getIntent().getExtras();
+        try {
+            ContactDataSource ds = new ContactDataSource(MapActivity.this);
+            ds.open();
+            if (extras != null) {
+                currentContact = ds.getSpecificContact(extras.getInt("contactid"));
+
+            } else {
+                contacts = ds.getContacts("contactname", "ASC");
+            }
+            ds.close();
+        } catch (Exception e) {
+            Toast.makeText(this, "Contact(s) could not be retrieved.", Toast.LENGTH_LONG).show();
+        }
+
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -71,7 +92,7 @@ public class MapActivity extends AppCompatActivity {
 
         createLocationRequest();
         createLocationCallback();
-
+        initMapTypeButtons();
         initListButton();
         initSettingsButton();
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.activity_contact_map), (v, insets) -> {
@@ -131,6 +152,12 @@ public class MapActivity extends AppCompatActivity {
         gmap = googleMap;
         gmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
+        RadioButton rbNormal = findViewById(R.id.radioButtonNormal);
+
+        rbNormal.setChecked(true);
+
+
+
         Point size = new Point();
         WindowManager w = getWindowManager();
         w.getDefaultDisplay().getSize(size);
@@ -139,17 +166,17 @@ public class MapActivity extends AppCompatActivity {
 
         if (contacts.size() > 0) {
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            for (int i = 0; i < contacts.size; i++) {
+            for (int i = 0; i < contacts.size(); i++) {
                 currentContact = contacts.get(i);
 
                 Geocoder geo = new Geocoder(this);
 
-                List<Address> adresses = null;
+                List<Address> addresses = null;
 
                 String address = currentContact.getStreetAddress() + ", " +
                         currentContact.getCity() + ", " +
                         currentContact.getState() + ", " +
-                        currentContact.getZipcode();
+                        currentContact.getZipCode();
 
                 try {
                     addresses = geo.getFromLocationName(address, 1);
@@ -163,8 +190,7 @@ public class MapActivity extends AppCompatActivity {
 
                 builder.include(point);
 
-                gmap.addMarker(new MarkerOptions().position(point),
-                        title(currentContact.getContactName()).snippet(address));
+                gmap.addMarker(new MarkerOptions().position(point).title(currentContact.getContactName()).snippet(address));
             }
             gmap.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(),
                     measuredWidth, measuredHeight, 450));
@@ -177,7 +203,7 @@ public class MapActivity extends AppCompatActivity {
                 String address = currentContact.getStreetAddress() + ", " +
                         currentContact.getCity() + ", " +
                         currentContact.getState() + ", " +
-                        currentContact.getZipcode();
+                        currentContact.getZipCode();
 
 
                 try {
@@ -190,13 +216,11 @@ public class MapActivity extends AppCompatActivity {
                 LatLng point = new LatLng(addresses.get(0).getLatitude(),
                         addresses.get(0).getLongitude());
 
-                builder.include(point);
 
-                gmap.addMarker(new MarkerOptions().position(point),
-                        title(currentContact.getContactName()).snippet(address));
 
-                gmap.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(),
-                        measuredWidth, measuredHeight, 450));
+                gmap.addMarker(new MarkerOptions().position(point).title(currentContact.getContactName()).snippet(address));
+
+                gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(point, 16));
             } else {
                 AlertDialog alertDialog = new AlertDialog.Builder(
                         MapActivity.this).create();
@@ -287,6 +311,20 @@ public class MapActivity extends AppCompatActivity {
 
     }
 
+    private void initMapTypeButtons() {
+        RadioGroup rgMapType = findViewById(R.id.radioGroupMapType);
+        rgMapType.setOnCheckedChangeListener (new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                RadioButton rbNormal = findViewById(R.id.radioButtonNormal);
+                if (rbNormal.isChecked()) {
+                    gmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                } else {
+                    gmap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+                }
+            }
+        });
+    }
 
 
 

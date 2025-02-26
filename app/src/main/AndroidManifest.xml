@@ -41,12 +41,13 @@
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyB34tBdLT2Num3dho4sokqAInNj5ofZwJ0"
+
             />
         <uses-library
 
             android:name="org.apache.http.legacy"
 
-            android:require="false" />
+            android:required="false" />
     </application>
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
