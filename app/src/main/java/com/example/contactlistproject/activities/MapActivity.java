@@ -3,8 +3,12 @@ package com.example.contactlistproject.activities;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -12,6 +16,7 @@ import android.location.LocationRequest;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -19,6 +24,7 @@ import android.widget.Toast;
 
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -31,10 +37,16 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
+
+import java.io.IOException;
 
 public class MapActivity extends AppCompatActivity {
 
@@ -118,6 +130,90 @@ public class MapActivity extends AppCompatActivity {
     public void onMapReady(GoogleMap googleMap) {
         gmap = googleMap;
         gmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+        Point size = new Point();
+        WindowManager w = getWindowManager();
+        w.getDefaultDisplay().getSize(size);
+        int measuredWidth = size.x;
+        int measuredHeight = size.y;
+
+        if (contacts.size() > 0) {
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            for (int i = 0; i < contacts.size; i++) {
+                currentContact = contacts.get(i);
+
+                Geocoder geo = new Geocoder(this);
+
+                List<Address> adresses = null;
+
+                String address = currentContact.getStreetAddress() + ", " +
+                        currentContact.getCity() + ", " +
+                        currentContact.getState() + ", " +
+                        currentContact.getZipcode();
+
+                try {
+                    addresses = geo.getFromLocationName(address, 1);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                LatLng point = new LatLng(addresses.get(0).getLatitude(),
+                        addresses.get(0).getLongitude());
+
+                builder.include(point);
+
+                gmap.addMarker(new MarkerOptions().position(point),
+                        title(currentContact.getContactName()).snippet(address));
+            }
+            gmap.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(),
+                    measuredWidth, measuredHeight, 450));
+        }
+        else {
+            if (currentContact != null) {
+                Geocoder geo = new Geocoder(this);
+                List<Address> addresses = null;
+
+                String address = currentContact.getStreetAddress() + ", " +
+                        currentContact.getCity() + ", " +
+                        currentContact.getState() + ", " +
+                        currentContact.getZipcode();
+
+
+                try {
+                    addresses = geo.getFromLocationName(address, 1);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                LatLng point = new LatLng(addresses.get(0).getLatitude(),
+                        addresses.get(0).getLongitude());
+
+                builder.include(point);
+
+                gmap.addMarker(new MarkerOptions().position(point),
+                        title(currentContact.getContactName()).snippet(address));
+
+                gmap.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(),
+                        measuredWidth, measuredHeight, 450));
+            } else {
+                AlertDialog alertDialog = new AlertDialog.Builder(
+                        MapActivity.this).create();
+
+                alertDialog.setTitle("No data");
+                alertDialog.setMessage("No data is available for the mapping function");
+
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE,
+                        "OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                finish();
+                            }
+                        });
+                alertDialog.show();
+            }
+        }
 
         try {
             if (Build.VERSION.SDK_INT >= 23) {
