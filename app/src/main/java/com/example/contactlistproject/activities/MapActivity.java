@@ -58,7 +58,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     LocationRequest locationRequest;
     LocationCallback locationCallback;
 
-    ArrayList<Contact> contacts = new ArrayList<Contact>();
+    ArrayList<Contact> contacts = new ArrayList<>();
     Contact currentContact = null;
 
 
@@ -146,7 +146,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         gmap = googleMap;
@@ -156,8 +155,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
 
         rbNormal.setChecked(true);
 
-
-
         Point size = new Point();
         WindowManager w = getWindowManager();
         w.getDefaultDisplay().getSize(size);
@@ -165,6 +162,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         int measuredHeight = size.y;
 
         if (contacts.size() > 0) {
+            System.out.println("Triegged");
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
             for (int i = 0; i < contacts.size(); i++) {
                 currentContact = contacts.get(i);
@@ -196,6 +194,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                     measuredWidth, measuredHeight, 450));
         }
         else {
+            System.out.println("Triegged else ");
             if (currentContact != null) {
                 Geocoder geo = new Geocoder(this);
                 List<Address> addresses = null;
@@ -215,8 +214,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
 
                 LatLng point = new LatLng(addresses.get(0).getLatitude(),
                         addresses.get(0).getLongitude());
-
-
 
                 gmap.addMarker(new MarkerOptions().position(point).title(currentContact.getContactName()).snippet(address));
 
@@ -238,7 +235,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                 alertDialog.show();
             }
         }
-
         try {
             if (Build.VERSION.SDK_INT >= 23) {
                 if (ContextCompat.checkSelfPermission(MapActivity.this,
@@ -262,7 +258,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                                     }
                                 })
                                 .show();
-
                     } else {
                         ActivityCompat.requestPermissions(
                                 MapActivity.this,
@@ -280,10 +275,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                     Toast.LENGTH_LONG).show();
         }
     }
-
-
-
-
 
 
     @Override
@@ -336,6 +327,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         ibList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                stopLocationUpdates();
                 Intent intent=new Intent(MapActivity.this, ContactListActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
@@ -348,6 +340,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         ibList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                stopLocationUpdates();
                 Intent intent=new Intent(MapActivity.this, SettingsActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
