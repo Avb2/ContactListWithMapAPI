@@ -102,64 +102,69 @@ public class MapActivity extends AppCompatActivity {
         gmap.setMyLocationEnabled(true);
     }
 
-
-
-
-    private void startLocationUpdates() {
-        if (Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+    private void stopLocationUpdates () {
+        if (Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(getBaseContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        && ContextCompat.checkSelfPermission(getBaseContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return ;
         }
 
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+    }
+
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        gmap = googleMap;
+        gmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
         try {
-            locationManager = (LocationManager) getBaseContext().getSystemService(Context.LOCATION_SERVICE);
-            gpsListener = new LocationListener() {
-                public void onLocationChanged(Location location) {
-                    TextView txtLatitude = (TextView) findViewById(R.id.textLatitude);
-                    TextView txtLongitude = (TextView) findViewById(R.id.textLongitude);
-                    TextView txtAccuracy = (TextView) findViewById(R.id.textAccuracy);
+            if (Build.VERSION.SDK_INT >= 23) {
+                if (ContextCompat.checkSelfPermission(MapActivity.this,
+                        Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(
+                            MapActivity.this,
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                    )) {
+                        Snackbar.make(findViewById(R.id.activity_contact_map),
+                                        "MyContactList requires this permission to locate " +
+                                                "your contacts", Snackbar.LENGTH_INDEFINITE)
+                                .setAction("Ok", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        ActivityCompat.requestPermissions(
+                                                MapActivity.this,
+                                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                                PERMISSION_REQUEST_LOCATION
+                                        );
 
-                    if (isBetterLocation(location)) {
-                        currentBestLocation = location;
+                                    }
+                                })
+                                .show();
 
-                        txtLatitude.setText(String.valueOf(currentBestLocation.getLatitude()));
-                        txtLongitude.setText(String.valueOf(currentBestLocation.getLongitude()));
-                        txtAccuracy.setText(String.valueOf(currentBestLocation.getAccuracy()));
+                    } else {
+                        ActivityCompat.requestPermissions(
+                                MapActivity.this,
+                                new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
+                                PERMISSION_REQUEST_LOCATION);
                     }
+                } else {
+                    startLocationUpdates();
                 }
-                public void onStatusChanged(String provider, int status, Bundle extras){}
-                public void onProviderEnabled(String provider) {}
-                public void onProviderDisabled(String provider){}
-            };
-
-            networkListener = new LocationListener() {
-                public void onLocationChanged(Location location) {
-                    TextView txtLatitude = (TextView) findViewById(R.id.textLatitude);
-                    TextView txtLongitude = (TextView) findViewById(R.id.textLongitude);
-                    TextView txtAccuracy = (TextView) findViewById(R.id.textAccuracy);
-
-                    if (isBetterLocation(location)) {
-
-                        currentBestLocation = location;
-
-                        txtLatitude.setText(String.valueOf(currentBestLocation.getLatitude()));
-                        txtLongitude.setText(String.valueOf(currentBestLocation.getLongitude()));
-                        txtAccuracy.setText(String.valueOf(currentBestLocation.getAccuracy()));
-                    }
-                }
-                public void onStatusChanged(String provider, int status, Bundle extras){}
-                public void onProviderEnabled(String provider) {}
-                public void onProviderDisabled(String provider){}
-            };
-
-
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, gpsListener);
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, networkListener);
+            } else {
+                startLocationUpdates();
+            }
         } catch (Exception e) {
-            Toast.makeText(getBaseContext(), "Error, Location not available", Toast.LENGTH_LONG).show();
-
+            Toast.makeText(getBaseContext(), "Error requesting permission",
+                    Toast.LENGTH_LONG).show();
         }
     }
+
+
+
+
+
 
     @Override
     public void onRequestPermissionsResult (int requestCode, String permissions[], int[] grantResults){
@@ -183,76 +188,12 @@ public class MapActivity extends AppCompatActivity {
                 PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return ;
         }
-        try {
-            locationManager.removeUpdates(networkListener);
-            locationManager.removeUpdates(gpsListener);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
-    ///
-    private void initGetLocationButton() {
-        Button locationButton = (Button) findViewById(R.id.buttonGetLocation);
-        locationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    if (Build.VERSION.SDK_INT >= 23) {
-                        if (ContextCompat.checkSelfPermission(MapActivity.this,
-                                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                            if (ActivityCompat.shouldShowRequestPermissionRationale(
-                                    MapActivity.this,
-                                    Manifest.permission.ACCESS_FINE_LOCATION
-                            )) {
-                                Snackbar.make(findViewById(R.id.activity_contact_map),
-                                                "MyContactList requires this permission to locate " +
-                                                        "your contacts", Snackbar.LENGTH_INDEFINITE)
-                                        .setAction("Ok", new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View view) {
-                                                ActivityCompat.requestPermissions(
-                                                        MapActivity.this,
-                                                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                                        PERMISSION_REQUEST_LOCATION
-                                                );
-
-                                            }
-                                        })
-                                        .show();
-
-                            } else {
-                                ActivityCompat.requestPermissions(
-                                        MapActivity.this,
-                                        new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
-                                        PERMISSION_REQUEST_LOCATION);
-                            }
-                        } else {
-                            startLocationUpdates();
-                        }
-                    } else {
-                        startLocationUpdates();
-                    }
-                } catch (Exception e) {
-                    Toast.makeText(getBaseContext(), "Error requesting permission",
-                            Toast.LENGTH_LONG).show();
-                }
-            }
-        });
     }
 
 
-    private boolean isBetterLocation(Location location) {
-        boolean isBetter = false;
-        if (currentBestLocation == null) {
-            isBetter = true;
-        } else if (location.getAccuracy() <= currentBestLocation.getAccuracy()) {
-            isBetter = true;
-        } else if (location.getTime() - currentBestLocation.getTime() > 5 * 60 * 1000) {
-            isBetter = true;
-        }
-        return isBetter;
-    }
+
+
 
 
     /// Nav Bar
