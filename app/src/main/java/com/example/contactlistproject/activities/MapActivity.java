@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationRequest;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -26,16 +27,22 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.contactlistproject.R;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.material.snackbar.Snackbar;
 
 public class MapActivity extends AppCompatActivity {
-    Location currentBestLocation;
 
-    LocationManager locationManager;
-
-    LocationListener gpsListener;
-    LocationListener networkListener;
     final int PERMISSION_REQUEST_LOCATION = 101;
+    GoogleMap gmap;
+    FusedLocationProviderClient fusedLocationProviderClient;
+    LocationRequest locationRequest;
+    LocationCallback locationCallback;
+
 
 
     @Override
@@ -43,7 +50,15 @@ public class MapActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_contact_map);
-        initGetLocationButton();
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
+        createLocationRequest();
+        createLocationCallback();
+
         initListButton();
         initSettingsButton();
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.activity_contact_map), (v, insets) -> {
