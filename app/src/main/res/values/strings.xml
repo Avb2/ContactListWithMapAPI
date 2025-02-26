@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">My Contact List</string>
+    <string name="contact_list_button_desc"></string>
+    <string name="map_button_desc">Map button to take you to maps</string>
+    <string name="settings_button_desc">"Settings button to take users to settings"</string>
+    <string name="saveButtonText">Save</string>
+    <string name="toggleButtonTextOff">Off</string>
+    <string name="textContactText">Contact</string>
+    <string name="textAddresstext">Address:</string>
+</resources>
