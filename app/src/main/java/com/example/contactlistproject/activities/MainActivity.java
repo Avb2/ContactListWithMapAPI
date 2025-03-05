@@ -2,7 +2,10 @@ package com.example.contactlistproject.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.SQLException;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.Editable;
@@ -20,14 +23,18 @@ import android.widget.ToggleButton;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.contactlistproject.DatePickerDialog;
+import com.example.contactlistproject.Manifest;
 import com.example.contactlistproject.R;
 import com.example.contactlistproject.db.ContactDataSource;
 import com.example.contactlistproject.models.Contact;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Calendar;
 
@@ -38,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.activity_contact_map), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.activity_main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -60,6 +67,55 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
 
     }
+
+    private void initCallFunction() {
+        EditText editPhone = (EditText) findViewById(R.id.editHome);
+        editPhone.setOnLongClickListener(
+                new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        checkPhonePermission(currentContact.getCellNumber());
+                        return false;
+                    }
+                }
+        );
+    }
+
+    private void checkPhonePermission(String phoneNumber){
+        if(Build.VERSION.SDK_INT>=23)
+        {
+            if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED)
+            {
+                if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,Manifest.permission.CALL_PHONE))
+                {
+                    Snackbar.make(findViewById(R.id.activity_main),"MyContactList requires this permission to place a call",Snackbar.LENGTH_INDEFINITE).setAction("OK", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.CALL_PHONE},
+                                    PERMISSION_REQUEST_PHONE);
+                        }
+                    }).show();
+                }
+                else
+                { callContact(phoneNumber);
+                }
+            }
+            else{
+                callContact(phoneNumber);
+            }
+        }
+    }
+
+
+    private void callContact(String phoneNumber){
+        Intent intent=new Intent(Intent.ACTION_CALL);
+        intent.setData(Uri.parse("tel:"+phoneNumber));
+        if (Build.VERSION.SDK_INT>=23 && ContextCompat.checkSelfPermission(getBaseContext(),Manifest.permission.CALL_PHONE)!= PackageManager.PERMISSION_GRANTED){
+            return;
+        }
+        else startActivity(intent);
+    }
+
 
 
     private Contact currentContact;

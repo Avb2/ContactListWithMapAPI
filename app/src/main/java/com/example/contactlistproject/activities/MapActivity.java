@@ -51,8 +51,6 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
 
-import org.w3c.dom.Text;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,7 +123,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         initMapTypeButtons();
         initListButton();
         initSettingsButton();
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.activity_contact_map), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.activity_main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -318,7 +316,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                             MapActivity.this,
                             Manifest.permission.ACCESS_FINE_LOCATION
                     )) {
-                        Snackbar.make(findViewById(R.id.activity_contact_map),
+                        Snackbar.make(findViewById(R.id.activity_main),
                                         "MyContactList requires this permission to locate " +
                                                 "your contacts", Snackbar.LENGTH_INDEFINITE)
                                 .setAction("Ok", new View.OnClickListener() {
