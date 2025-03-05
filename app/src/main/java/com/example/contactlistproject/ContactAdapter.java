@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.contactlistproject.db.ContactDataSource;
 import com.example.contactlistproject.models.Contact;
 
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 

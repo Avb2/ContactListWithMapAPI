@@ -102,6 +102,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         });
     }
 
+    /// Gets API location
     private void createLocationRequest() {
         locationRequest = LocationRequest.create();
         locationRequest.setInterval(10000);
@@ -109,6 +110,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
+    /// If the result is None nothing happens. Current location
     private void createLocationCallback() {
         locationCallback = new LocationCallback() {
             @Override
@@ -124,6 +126,8 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         };
     }
 
+
+    /// Get the permissions and if enabled set location
     private void startLocationUpdates() {
         if (Build.VERSION.SDK_INT >=23 && ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
                 getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION) !=
@@ -135,6 +139,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         gmap.setMyLocationEnabled(true);
     }
 
+    ///  Stops location and removes from device
     private void stopLocationUpdates () {
         if (Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(getBaseContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -146,6 +151,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
+    /// Creating map instance
     @Override
     public void onMapReady(GoogleMap googleMap) {
         gmap = googleMap;
@@ -162,7 +168,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         int measuredHeight = size.y;
 
         if (contacts.size() > 0) {
-            System.out.println("Triegged");
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
             for (int i = 0; i < contacts.size(); i++) {
                 currentContact = contacts.get(i);
@@ -194,7 +199,6 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
                     measuredWidth, measuredHeight, 450));
         }
         else {
-            System.out.println("Triegged else ");
             if (currentContact != null) {
                 Geocoder geo = new Geocoder(this);
                 List<Address> addresses = null;
@@ -277,6 +281,8 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
     }
 
 
+
+    /// If permissions are granted start the location
     @Override
     public void onRequestPermissionsResult (int requestCode, String permissions[], int[] grantResults){
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -292,6 +298,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         }
     }
 
+
     @Override
     public void onPause() {
         super.onPause();
@@ -301,7 +308,7 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
         }
 
     }
-
+    /// Radio buttons
     private void initMapTypeButtons() {
         RadioGroup rgMapType = findViewById(R.id.radioGroupMapType);
         rgMapType.setOnCheckedChangeListener (new RadioGroup.OnCheckedChangeListener() {
