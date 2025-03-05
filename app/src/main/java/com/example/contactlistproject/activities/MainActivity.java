@@ -45,25 +45,40 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.activity_main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.activity_main_page), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+
+
+
         initListButton();
         initMapButton();
         initSettingsButton();
         initToggleButton();
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            initContact(extras.getInt("contactid"));
-        } else {
-            currentContact = new Contact();
-        }
+        Bundle extras=getIntent().getExtras();
+        if(extras !=null) initContact(extras.getInt("contactid"));
+        else currentContact=new Contact();
         setForEditing(false);
         initChangeDateButton();
-        initSaveButton();
         initTextChangedEvents();
+        initCallFunction();
+        initImageButton();
+        sendMessage();
+        cameraLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Bitmap photo = (Bitmap) result.getData().getExtras().get("data");
+                        Bitmap scaledPhoto = Bitmap.createScaledBitmap(photo, 144, 144, true);
+                        ImageButton imageButton = findViewById(R.id.imageContact);
+                        imageButton.setImageBitmap(scaledPhoto);
+                        currentContact.setPicture(scaledPhoto);
+                    }
+                });
+        initSaveButton();
 
 
     }
@@ -79,6 +94,31 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                     }
                 }
         );
+    }
+
+
+    private void initImageButton() {
+        ImageButton ib = findViewById(R.id.imageContact);
+        ib.setOnClickListener(v -> {
+            if (Build.VERSION.SDK_INT >= 23) {
+                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.CAMERA)) {
+                        Snackbar.make(findViewById(R.id.activity_main_page),
+                                        "This app needs permission to take pictures", Snackbar.LENGTH_INDEFINITE)
+                                .setAction("OK", v1 -> ActivityCompat.requestPermissions(MainActivity.this,
+                                        new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA))
+                                .show();
+                    } else {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
+                    }
+                } else {
+                    takePhoto();
+                }
+            } else {
+                takePhoto();
+            }
+        });
     }
 
     private void checkPhonePermission(String phoneNumber){
