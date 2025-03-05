@@ -1,10 +1,12 @@
 package com.example.contactlistproject.activities;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.SQLException;
 import android.graphics.Bitmap;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,7 +36,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.contactlistproject.DatePickerDialog;
-import com.example.contactlistproject.Manifest;
 import com.example.contactlistproject.R;
 import com.example.contactlistproject.db.ContactDataSource;
 import com.example.contactlistproject.models.Contact;
@@ -159,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CAMERA_REQUEST) {
             if (resultCode == RESULT_OK) {
                 Bitmap photo = (Bitmap) data.getExtras().get("data");
@@ -241,7 +243,6 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
 
 
-    private Contact currentContact;
 
     private void initListButton(){
         ImageButton ibList=findViewById(R.id.imageButtonList);
@@ -364,6 +365,12 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         EditText editCell = findViewById(R.id.editCell);
         EditText editEmail = findViewById(R.id.editEmail);
         TextView birthday = findViewById(R.id.textBirthday);
+        ImageButton picture = (ImageButton) findViewById(R.id.imageContact);
+        if (currentContact.getPicture() != null) {
+            picture.setImageBitmap(currentContact.getPicture());
+        } else {
+            picture.setImageResource(R.drawable.photoicon);
+        }
 
         editName.setText(currentContact.getContactName());
         editAddress.setText(currentContact.getStreetAddress());

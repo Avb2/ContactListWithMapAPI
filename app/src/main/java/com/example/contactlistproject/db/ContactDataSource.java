@@ -116,14 +116,6 @@ public class ContactDataSource {
 
     public boolean insertContact(Contact c) {
         boolean didSucceed = false;
-
-        if (c.getPicture() != null) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            c.getPicture().compress(Bitmap.CompressFormat.PNG, 100, baos);
-            byte[] photo = baos.toByteArray();
-            initialValues.put("contactphoto", photo);
-        }
-
         try {
             ContentValues initialValues = new ContentValues();
             initialValues.put("contactname", c.getContactName());
@@ -135,7 +127,12 @@ public class ContactDataSource {
             initialValues.put("cellnumber", c.getCellNumber());
             initialValues.put("email", c.geteMail());
             initialValues.put("birthday", String.valueOf(c.getBirthday().getTimeInMillis()));
-
+            if (c.getPicture() != null) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                c.getPicture().compress(Bitmap.CompressFormat.PNG, 100, baos);
+                byte[] photo = baos.toByteArray();
+                initialValues.put("contactphoto", photo);
+            }
             didSucceed = database.insert("contact", null, initialValues) > 0 ;
         } catch (Exception e) {
 
@@ -147,14 +144,6 @@ public class ContactDataSource {
 
     public boolean updateContact(Contact c) {
         boolean didSuceed = false;
-
-        if (c.getPicture() != null) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            c.getPicture().compress(Bitmap.CompressFormat.PNG, 100, baos);
-            byte[] photo = baos.toByteArray();
-            updateValues.put("contactphoto", photo);
-        }
-
         try {
             Long rowId = (long) c.getContactID();
             ContentValues updateValues = new ContentValues();
@@ -168,6 +157,12 @@ public class ContactDataSource {
             updateValues.put("cellnumber", c.getCellNumber());
             updateValues.put("email", c.geteMail());
             updateValues.put("birthday", String.valueOf(c.getBirthday().getTimeInMillis()));
+            if (c.getPicture() != null) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                c.getPicture().compress(Bitmap.CompressFormat.PNG, 100, baos);
+                byte[] photo = baos.toByteArray();
+                updateValues.put("contactphoto", photo);
+            }
 
             didSuceed = database.update("contact", updateValues, "id="+rowId, null) > 0;
         } catch (Exception e) {

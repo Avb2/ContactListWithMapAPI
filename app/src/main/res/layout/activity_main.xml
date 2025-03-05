@@ -340,6 +340,22 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/photoicon" />
 
+
+            <Button
+                android:id="@+id/callButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="142dp"
+                android:text="Send Message"
+                app:layout_constraintBottom_toTopOf="@+id/editCell"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toEndOf="@+id/editAddress"
+                app:layout_constraintTop_toBottomOf="@+id/imageContact"
+                app:layout_constraintVertical_bias="0.0" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </ScrollView>
