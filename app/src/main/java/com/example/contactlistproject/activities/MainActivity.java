@@ -121,6 +121,15 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         });
     }
 
+
+    private void takePhoto() {
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraLauncher.launch(cameraIntent);  // Use the ActivityResultLauncher to handle the result
+    }
+
+
+}
+
     private void checkPhonePermission(String phoneNumber){
         if(Build.VERSION.SDK_INT>=23)
         {
