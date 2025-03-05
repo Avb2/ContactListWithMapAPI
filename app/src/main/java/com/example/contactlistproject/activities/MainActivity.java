@@ -24,6 +24,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -42,13 +43,21 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity implements DatePickerDialog.SaveDateListener {
+    private Contact currentContact;
+    final int PERMISSION_REQUEST_PHONE=102;
+
+    final int PERMISSION_REQUEST_CAMERA=103;
+
+    final int CAMERA_REQUEST=1888;
+
+    private ActivityResultLauncher<Intent> cameraLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.activity_main_page), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.activity_main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -150,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     }
 
 
-}
+
 
     private void checkPhonePermission(String phoneNumber){
         if(Build.VERSION.SDK_INT>=23)
@@ -272,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         });
     }
     private void setForEditing(boolean enabled){
-        EditText editName=findViewById(R.id.editName);
+        EditText editName= findViewById(R.id.editName);
         EditText editAddress=findViewById(R.id.editAddress);
         EditText editCity=findViewById(R.id.editCity);
         EditText editState=findViewById(R.id.editState);
@@ -293,6 +302,10 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         editEmail.setEnabled(enabled);
         buttonchange.setEnabled(enabled);
         buttonsave.setEnabled(enabled);
+
+        ImageButton picture = findViewById(R.id.imageContact);
+
+        picture.setEnabled(enabled);
         if (enabled) {
 
             editName.requestFocus();
@@ -308,6 +321,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         }
 
     }
+
     private void initChangeDateButton() {
         Button changeDate = findViewById(R.id.btnBirthday);
         changeDate.setOnClickListener(v -> {
@@ -359,9 +373,6 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
         currentContact.setBirthday(selectedTime);
     }
-
-
-
 
 
     private void initTextChangedEvents() {
@@ -573,10 +584,6 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
         EditText editEmail = findViewById(R.id.editEmail);
         imm.hideSoftInputFromWindow(editEmail.getWindowToken(), 0);
-
-
-
-
     }
 
 }
