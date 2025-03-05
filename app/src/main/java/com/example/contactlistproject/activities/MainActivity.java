@@ -107,6 +107,37 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     }
 
 
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case PERMISSION_REQUEST_PHONE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(MainActivity.this, "You may now call from this app", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "You will not be able to call", Toast.LENGTH_LONG).show();
+                }
+                break;
+            }
+            case PERMISSION_REQUEST_CAMERA: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    takePhoto();
+                } else {
+                    Toast.makeText(MainActivity.this, "You will not be able to save contact pics", Toast.LENGTH_LONG).show();
+                }
+                break;
+            }
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.SEND_SMS}, 1);
+        }
+
+    }
+
+
     private void callContact(String phoneNumber){
         Intent intent=new Intent(Intent.ACTION_CALL);
         intent.setData(Uri.parse("tel:"+phoneNumber));
