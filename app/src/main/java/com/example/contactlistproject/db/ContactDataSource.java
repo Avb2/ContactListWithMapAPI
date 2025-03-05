@@ -6,9 +6,13 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import com.example.contactlistproject.models.Contact;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -67,9 +71,19 @@ public class ContactDataSource {
     }
 
     public Contact getSpecificContact(int contactId) {
+
+
         Contact contact = new Contact();
         String query = "SELECT * FROM contact WHERE _id=" + contactId;
         Cursor cursor = database.rawQuery(query, null);
+
+        byte[] photo = cursor.getBlob(10);
+        if (photo != null) {
+            ByteArrayInputStream imageStream = new ByteArrayInputStream(photo);
+            Bitmap thePicture = BitmapFactory.decodeStream(imageStream);
+            contact.setPicture(thePicture);
+
+        }
 
         if (cursor.moveToFirst()) {
             contact.setContactID(cursor.getInt(0));
@@ -103,6 +117,13 @@ public class ContactDataSource {
     public boolean insertContact(Contact c) {
         boolean didSucceed = false;
 
+        if (c.getPicture() != null) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            c.getPicture().compress(Bitmap.CompressFormat.PNG, 100, baos);
+            byte[] photo = baos.toByteArray();
+            initialValues.put("contactphoto", photo);
+        }
+
         try {
             ContentValues initialValues = new ContentValues();
             initialValues.put("contactname", c.getContactName());
@@ -126,6 +147,13 @@ public class ContactDataSource {
 
     public boolean updateContact(Contact c) {
         boolean didSuceed = false;
+
+        if (c.getPicture() != null) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            c.getPicture().compress(Bitmap.CompressFormat.PNG, 100, baos);
+            byte[] photo = baos.toByteArray();
+            updateValues.put("contactphoto", photo);
+        }
 
         try {
             Long rowId = (long) c.getContactID();
