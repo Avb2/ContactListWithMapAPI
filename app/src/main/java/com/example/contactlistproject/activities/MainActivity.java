@@ -7,6 +7,7 @@ import android.database.SQLException;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -83,6 +84,25 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
     }
 
+
+    private void sendMessage(){
+        Button setCall=findViewById(R.id.callButton);
+        setCall.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Message();
+
+            }
+        });
+    }
+
+    private void Message() {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse("sms:" + currentContact.getPhoneNumber())); // Use 'sms:' scheme
+        intent.putExtra("Assignment", "Hello!"); // Pre-fill message body (optional)
+        startActivity(intent);
+    }
+
     private void initCallFunction() {
         EditText editPhone = (EditText) findViewById(R.id.editHome);
         editPhone.setOnLongClickListener(
@@ -103,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             if (Build.VERSION.SDK_INT >= 23) {
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                     if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.CAMERA)) {
-                        Snackbar.make(findViewById(R.id.activity_main_page),
+                        Snackbar.make(findViewById(R.id.activity_main),
                                         "This app needs permission to take pictures", Snackbar.LENGTH_INDEFINITE)
                                 .setAction("OK", v1 -> ActivityCompat.requestPermissions(MainActivity.this,
                                         new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA))
@@ -124,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
     private void takePhoto() {
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        cameraLauncher.launch(cameraIntent);  // Use the ActivityResultLauncher to handle the result
+        cameraLauncher.launch(cameraIntent);
     }
 
 
