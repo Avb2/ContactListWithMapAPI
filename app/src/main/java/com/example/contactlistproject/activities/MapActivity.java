@@ -7,6 +7,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Point;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -17,6 +21,7 @@ import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -46,6 +51,8 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.w3c.dom.Text;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +61,13 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
 
     final int PERMISSION_REQUEST_LOCATION = 101;
     GoogleMap gmap;
+    SensorManager sensorManager;
+
+    Sensor accelerometer;
+
+    Sensor magnetometer;
+
+    TextView textDirection;
     FusedLocationProviderClient fusedLocationProviderClient;
     LocationRequest locationRequest;
     LocationCallback locationCallback;
@@ -84,11 +98,27 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
             Toast.makeText(this, "Contact(s) could not be retrieved.", Toast.LENGTH_LONG).show();
         }
 
+
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+
+        if (accelerometer != null && magnetometer != null) {
+            sensorManager.registerListener(mySensorEventListener, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+
+            sensorManager.registerListener(mySensorEventListener, magnetometer,
+                    SensorManager.SENSOR_DELAY_FASTEST);
+        } else {
+            Toast.makeText(this, "Sensors not found", Toast.LENGTH_LONG).show();
+        }
+
+        textDirection = (TextView) findViewById(R.id.textHeading);
 
         createLocationRequest();
         createLocationCallback();
@@ -101,6 +131,47 @@ public class MapActivity extends AppCompatActivity implements  OnMapReadyCallbac
             return insets;
         });
     }
+
+    /// handles the actual events from the sensors and takes action on them
+    private SensorEventListener mySensorEventListener=new SensorEventListener() {
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        }
+
+        private float[] accelerometerValues = new float[3];
+        private float[] magneticValues = new float[3];
+
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+                System.arraycopy(event.values, 0, accelerometerValues, 0, event.values.length);
+            } else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+                System.arraycopy(event.values, 0, magneticValues, 0, event.values.length);
+            }
+
+            if (accelerometerValues != null && magneticValues != null) {
+                float[] R = new float[9];
+                float[] I = new float[9];
+                boolean success = SensorManager.getRotationMatrix(R, I, accelerometerValues, magneticValues);
+                if (success) {
+                    float[] orientation = new float[3];
+                    SensorManager.getOrientation(R, orientation);
+                    float azimuth = (float) Math.toDegrees(orientation[0]);
+                    azimuth = (azimuth + 360) % 360;
+                    String direction = getDirectionFromAzimuth(azimuth);
+                    textDirection.setText(direction);
+                }
+            }
+
+
+        }
+        private String getDirectionFromAzimuth(float azimuth) {
+            if (azimuth >= 315 || azimuth < 45) return "N";
+            else if (azimuth >= 225) return "W";
+            else if (azimuth >= 135) return "S";
+            else return "E";
+        }
+    };
 
     /// Gets API location
     private void createLocationRequest() {
